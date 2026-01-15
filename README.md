@@ -32,7 +32,6 @@ The goal of this repository is to:
 ✔ Produce evidence through screenshots
 ✔ Provide Splunk search queries used during analysis
 
-This project reflects the role of Tier 1 and Tier 2 SOC analysts:
 ## Overview
 
 The investigation involved:
