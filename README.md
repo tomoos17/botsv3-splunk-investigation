@@ -22,6 +22,9 @@ All analysis was performed using Splunk Search Processing Language (SPL).
 ## Repository Structure
 
 ```
+queries/
+   all_queries.spl
+
 screenshots/
    q1.png
    q2.png
@@ -32,8 +35,7 @@ screenshots/
    q7.png
    q8.png
 
-splunk_queries/
-   all_queries.spl
+setup
 
 README.md
 ```
