@@ -69,7 +69,7 @@ README.md
 All SPL queries used in this investigation are stored in:
 
 ```
-splunk_queries/all_queries.spl
+queries/all_queries.spl
 ```
 
 These include:
