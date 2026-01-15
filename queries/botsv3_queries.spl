@@ -1,0 +1,80 @@
+# =========================
+# BOTSv3 – Coursework SPL Queries
+# =========================
+
+# -------------------------
+# Question 1 – IAM users that accessed AWS services
+# Answer: bstoll,btun,splunk_access,web_admin
+# -------------------------
+index=botsv3 sourcetype=aws:cloudtrail userIdentity.userName!=""
+| stats count by userIdentity.userName
+| sort userIdentity.userName
+
+
+# -------------------------
+# Question 2 – Field to alert on AWS API activity without MFA
+# Answer: userIdentity.sessionContext.attributes.mfaAuthenticated
+# (This query is used to FIND the field in context)
+# -------------------------
+index=botsv3 sourcetype=aws:cloudtrail "*mfaAuthenticated*" NOT "ConsoleLogin"
+| table _time userIdentity.userName eventName userIdentity.sessionContext.attributes.mfaAuthenticated sourceIPAddress
+
+
+# -------------------------
+# Question 3 – Processor number used on the web servers
+# Answer: E5-2676
+# (You may have browsed fields in the UI; this query lists CPU-related info)
+# -------------------------
+index=botsv3 sourcetype=hardware
+| table host vendor model processor* cpu*
+
+
+# -------------------------
+# Question 4 – Event ID of API call that enabled public S3 access
+# Answer: ab45689d-69cd-41e7-8705-5350402cf7ac
+# -------------------------
+index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl "AllUsers"
+| table _time eventID userIdentity.userName requestParameters.bucketName sourceIPAddress
+
+
+# -------------------------
+# Question 5 – Bud’s username
+# Answer: bstoll
+# (Same event as Q4; just focusing on the user field)
+# -------------------------
+index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl "AllUsers"
+| stats values(userIdentity.userName) as bud_username
+
+
+# -------------------------
+# Question 6 – Name of the S3 bucket that was made public
+# Answer: frothlywebcode
+# -------------------------
+index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl "AllUsers"
+| stats values(requestParameters.bucketName) as public_bucket_name
+
+
+# -------------------------
+# Question 7 – Name of the text file uploaded to the S3 bucket
+# Answer: OPEN_BUCKET_PLEASE_FIX.txt
+# -------------------------
+index=botsv3 sourcetype="aws:s3:accesslogs" frothlywebcode "*.txt"
+| table _time cs_method cs_uri_stem sc_status
+# (You spotted OPEN_BUCKET_PLEASE_FIX.txt in cs_uri_stem)
+
+
+# -------------------------
+# Question 8 – FQDN of endpoint with different Windows OS edition
+# Answer: BSTOLL-L.froth.ly
+# -------------------------
+
+# Step A – Inspect Windows host OS by host
+index=botsv3 sourcetype=WinHostMon
+| stats values(os) as os by host
+
+# (From this you saw BSTOLL-L had a different OS edition)
+
+# Step B – Get FQDN for BSTOLL-L
+index=botsv3 "BSTOLL-L"
+| table _time host ComputerName
+# (ComputerName field showed: BSTOLL-L.froth.ly)
