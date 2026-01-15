@@ -69,7 +69,7 @@ README.md
 All SPL queries used in this investigation are stored in:
 
 ```
-queries/all_queries.spl
+queries/botsv3_queries.spl
 ```
 
 These include:
