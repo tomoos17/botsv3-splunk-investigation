@@ -3,8 +3,36 @@ Security Operations &amp; Incident Response investigation using Splunk and the B
 
 # BOTSv3 Splunk Investigation – Coursework Repository
 
-This repository contains all screenshots, SPL queries, and documentation used to complete the BOTSv3 (Boss of the SOC v3) investigation using Splunk Enterprise. The objective of this coursework was to analyse AWS CloudTrail, S3 Access Logs, and Windows Host Monitoring logs to identify anomalies, misconfigurations, and indicators of compromise.
+🔍 Introduction
 
+This repository documents the complete setup, configuration, and investigative workflow performed for the COMP3010 – Security Operations & Incident Management module using the Boss of the SOC v3 (BOTSv3) dataset and Splunk Enterprise.
+
+The purpose of this project is to simulate a real-world Security Operations Centre (SOC) investigation scenario using realistic enterprise log data. BOTSv3 provides a wide variety of security-relevant telemetry including:
+
+AWS CloudTrail logs
+
+AWS S3 Access logs
+
+Windows endpoint monitoring
+
+Hardware inventory logs
+
+Authentication logs
+
+Network activity logs
+
+These datasets are specifically designed to mimic real enterprise logging, enabling analysts to detect misconfigurations, identify compromised systems, and trace attacker activity.
+
+The goal of this repository is to:
+
+✔ Demonstrate Splunk installation and configuration
+✔ Load and index the BOTSv3 dataset correctly
+✔ Validate log ingestion and check data completeness
+✔ Perform guided investigative queries
+✔ Produce evidence through screenshots
+✔ Provide Splunk search queries used during analysis
+
+This project reflects the role of Tier 1 and Tier 2 SOC analysts:
 ## Overview
 
 The investigation involved:
