@@ -264,6 +264,6 @@ These include:
 
 ## Author
 
-**Thomas Naduvilaveedu Martin**  
+**Thomas Gabriel Naduvilaveedu Martin**  
 BSc Cyber Security  
 University of Plymouth
