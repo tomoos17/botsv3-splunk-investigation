@@ -6,9 +6,8 @@
 # Question 1 – IAM users that accessed AWS services
 # Answer: bstoll,btun,splunk_access,web_admin
 # -------------------------
-index=botsv3 sourcetype=aws:cloudtrail userIdentity.userName!=""
+index=botsv3 sourcetype=aws:cloudtrail
 | stats count by userIdentity.userName
-| sort userIdentity.userName
 
 
 # -------------------------
@@ -16,8 +15,8 @@ index=botsv3 sourcetype=aws:cloudtrail userIdentity.userName!=""
 # Answer: userIdentity.sessionContext.attributes.mfaAuthenticated
 # (This query is used to FIND the field in context)
 # -------------------------
-index=botsv3 sourcetype=aws:cloudtrail "*mfaAuthenticated*" NOT "ConsoleLogin"
-| table _time userIdentity.userName eventName userIdentity.sessionContext.attributes.mfaAuthenticated sourceIPAddress
+index=botsv3 sourcetype=aws:cloudtrail "*mfaAuthenticated*" NOT  "*ConsoleLogin*" 
+| head 5
 
 
 # -------------------------
@@ -26,7 +25,6 @@ index=botsv3 sourcetype=aws:cloudtrail "*mfaAuthenticated*" NOT "ConsoleLogin"
 # (You may have browsed fields in the UI; this query lists CPU-related info)
 # -------------------------
 index=botsv3 sourcetype=hardware
-| table host vendor model processor* cpu*
 
 
 # -------------------------
@@ -34,7 +32,6 @@ index=botsv3 sourcetype=hardware
 # Answer: ab45689d-69cd-41e7-8705-5350402cf7ac
 # -------------------------
 index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl "AllUsers"
-| table _time eventID userIdentity.userName requestParameters.bucketName sourceIPAddress
 
 
 # -------------------------
@@ -43,15 +40,14 @@ index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl "AllUsers"
 # (Same event as Q4; just focusing on the user field)
 # -------------------------
 index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl "AllUsers"
-| stats values(userIdentity.userName) as bud_username
 
 
 # -------------------------
 # Question 6 – Name of the S3 bucket that was made public
 # Answer: frothlywebcode
 # -------------------------
-index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl "AllUsers"
-| stats values(requestParameters.bucketName) as public_bucket_name
+index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl
+| stats values(requestParameters.bucketName)
 
 
 # -------------------------
@@ -59,8 +55,6 @@ index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl "AllUsers"
 # Answer: OPEN_BUCKET_PLEASE_FIX.txt
 # -------------------------
 index=botsv3 sourcetype="aws:s3:accesslogs" frothlywebcode "*.txt"
-| table _time cs_method cs_uri_stem sc_status
-# (You spotted OPEN_BUCKET_PLEASE_FIX.txt in cs_uri_stem)
 
 
 # -------------------------
@@ -72,9 +66,7 @@ index=botsv3 sourcetype="aws:s3:accesslogs" frothlywebcode "*.txt"
 index=botsv3 sourcetype=WinHostMon
 | stats values(os) as os by host
 
-# (From this you saw BSTOLL-L had a different OS edition)
 
 # Step B – Get FQDN for BSTOLL-L
 index=botsv3 "BSTOLL-L"
-| table _time host ComputerName
-# (ComputerName field showed: BSTOLL-L.froth.ly)
+
