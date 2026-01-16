@@ -1,6 +1,8 @@
 # botsv3-splunk-investigation
 Security Operations &amp; Incident Response investigation using Splunk and the BOTSv3 dataset. Coursework project for COMP3010 (University of Plymouth).
 
+youtube video link: https://youtu.be/Z21MtkB8w2g?si=wH3-HhwoZoncZVt8
+
 # BOTSv3 Splunk Investigation – Coursework Repository
 
 Introduction
