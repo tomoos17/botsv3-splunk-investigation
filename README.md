@@ -80,8 +80,9 @@ README.md
 
 ## Summary of Findings
 
-4. Guided Questions – Investigation & Analysis
+Guided Questions – Investigation & Analysis
 This section presents the detailed analysis of Questions 1–8 from the BOTSv3 guided AWS-focused dataset. Each question includes the SPL query used, interpretation of results, and SOC relevance.
+
 4.1 Question 1 – Identifying IAM Users Accessing AWS Services
 Question:
 List the IAM users that accessed an AWS service (successfully or unsuccessfully) in Frothly’s AWS environment.
