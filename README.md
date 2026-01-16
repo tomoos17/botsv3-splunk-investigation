@@ -80,33 +80,131 @@ README.md
 
 ## Summary of Findings
 
-### Question 1 – IAM Users Accessing AWS Services  
-**Answer:** bstoll,btun,splunk_access,web_admin
+4. Guided Questions – Investigation & Analysis
+This section presents the detailed analysis of Questions 1–8 from the BOTSv3 guided AWS-focused dataset. Each question includes the SPL query used, interpretation of results, and SOC relevance.
+4.1 Question 1 – Identifying IAM Users Accessing AWS Services
+Question:
+List the IAM users that accessed an AWS service (successfully or unsuccessfully) in Frothly’s AWS environment.
+SPL Query Used:
+index=botsv3 sourcetype=aws:cloudtrail
+| stats count by userIdentity.userName
+Explanation:
+AWS CloudTrail logs record every API event that occurs in the AWS environment. The field userIdentity.userName identifies the IAM user making the request. Using stats count provides an aggregated list of all IAM users appearing in logs.
+ 
+Result:
+The IAM users identified were:
+bstoll, btun, splunk_access, web_admin
+SOC Relevance:
+This step aligns with Tier 1 SOC responsibilities—identifying active user accounts and verifying whether the activity is expected or suspicious. IAM activity analysis is essential for monitoring insider threats and validating policy compliance.
+________________________________________
+4.2 Question 2 – Detecting API Activity Without MFA
+Question:
+What field indicates AWS API activity without MFA? (Exclude console logins)
+SPL Query Used:
+index=botsv3 sourcetype=aws:cloudtrail "*mfaAuthenticated*" NOT "*ConsoleLogin*" 
+| head 5
+Explanation:
+The field userIdentity.sessionContext.attributes.mfaAuthenticated indicates whether MFA was used (true or false) during API calls. Searching for this field directly reveals API actions that did not enforce MFA.
+ 
+ Result:
+userIdentity.sessionContext.attributes.mfaAuthenticated
+SOC Relevance:
+This reflects weak identity controls. Lack of MFA is a major security risk and often exploited in real attacks, placing this finding under the Detection and Preparation stages of the incident lifecycle.
+________________________________________
+4.3 Question 3 – Identifying Processor Used on Web Servers
+Question:
+What processor model is used by the Frothly web servers?
+SPL Query Used:
+index=botsv3 sourcetype=hardware
+Explanation:
+The hardware sourcetype contains system inventory information including CPU model, memory, and storage. Extracting processor values reveals the CPU type used across web hosts.
+ 
+ Result:
+E5-2676
+SOC Relevance:
+Understanding hardware baselines helps identify inconsistencies or unauthorised changes. If a single machine reports a different processor model, it may indicate tampering or misconfiguration.
+________________________________________
+4.4 Question 4 – Identifying the Event ID That Made an S3 Bucket Public
+Question:
+What is the Event ID of the API call that made the S3 bucket publicly accessible?
+SPL Query Used:
+index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl "AllUsers"
+Explanation:
+PutBucketAcl is the API event used to modify S3 access control lists (ACLs). Searching for "AllUsers" reveals permissions that grant public access.
+ 
+ Result:
+ab45689d-69cd-41e7-8705-5350402cf7ac
+SOC Relevance:
+This represents a cloud misconfiguration—one of the leading causes of real-world breaches. Identifying the exact event and user responsible is essential for containment and compliance auditing.
+________________________________________
+4.5 Question 5 – Identifying the User Responsible for the S3 Misconfiguration
+Question:
+What is Bud’s username?
+SPL Query Used:
+index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl "AllUsers"
+Explanation:
+This query extracts the username responsible for the public ACL change.
+ 
+Result:
+bstoll
+SOC Relevance:
+Attribution is critical in incident response. Identifying the user behind a risky change allows SOC analysts to determine intent—whether accidental (misconfiguration) or malicious (insider threat).
+________________________________________
+4.6 Question 6 – Identifying the Publicly Accessible S3 Bucket
+Question:
+What is the name of the S3 bucket that became publicly accessible?
+SPL Query Used:
+index=botsv3 sourcetype=aws:cloudtrail eventName=PutBucketAcl
+| stats values(requestParameters.bucketName)
+Explanation
+To identify which S3 bucket was made publicly accessible, I filtered the CloudTrail logs for the PutBucketAcl event, which records changes to bucket permissions. The field requestParameters.bucketName revealed that the misconfiguration affected the bucket named frothlywebcode. This confirms that this bucket had its ACL updated in a way that allowed public access, exposing stored data to anyone on the internet.
 
-### Question 2 – MFA Status Field (JSON Path)  
-**Answer:** userIdentity.sessionContext.attributes.mfaAuthenticated
+ 
 
-### Question 3 – Processor Number on Web Servers  
-**Answer:** E5-2676
 
-### Question 4 – Event ID of Public S3 ACL Change  
-**Answer:** ab45689d-69cd-41e7-8705-5350402cf7ac
+Result:
+frothlywebcode
+SOC Relevance:
+Knowing which bucket was exposed helps determine the scope of exposure and whether sensitive assets were placed at risk.
+________________________________________
+4.7 Question 7 – Identifying File Uploaded to the Public S3 Bucket
+Question:
+What text file was successfully uploaded while the bucket was exposed?
+SPL Query Used:
+index=botsv3 sourcetype="aws:s3:accesslogs" frothlywebcode "*.txt"
 
-### Question 5 – Bud’s Username  
-**Answer:** bstoll
 
-### Question 6 – Public S3 Bucket Name  
-**Answer:** frothlywebcode
+Explanation
+To find the file uploaded while the bucket was publicly accessible, I examined the S3 access logs using the aws:s3:accesslogs sourcetype. Filtering by the bucket name showed a successful (HTTP 200) file upload request for OPEN_BUCKET_PLEASE_FIX.txt, which indicates that someone placed this file in the bucket—either as a warning about the misconfiguration or as proof that the bucket was writable by the public.
+ 
+Result:
+OPEN_BUCKET_PLEASE_FIX.txt
+SOC Relevance:
+This shows the bucket was publicly writable, not just readable—a far more severe risk. Anyone on the internet could upload or modify files.
+________________________________________
 
-### Question 7 – Uploaded Text File Name  
-**Answer:** OPEN_BUCKET_PLEASE_FIX.txt
 
-### Question 8 – FQDN of Endpoint with Different Windows OS  
-**Answer:** BSTOLL-L.froth.ly
+4.8 Question 8 – Identifying Endpoint with Different OS Version
+Question:
+Which endpoint is running a different Windows edition than the others?
+SPL Query Used:
+1.	index=botsv3 winhostmon
+   | stats values(os) by host
 
-## SPL Queries Used
+2. index=botsv3 “BSTOLL-L”
+Explanation
+Using the winhostmon sourcetype, I reviewed Windows host system information and compared OS versions across machines. One host, bstoll-l.froth.ly, was running a different Windows edition than the others, making it stand out as an anomaly. Systems with inconsistent OS configurations can indicate unmanaged devices, misconfigurations, or potential security risks in an enterprise environment. 
+ 
 
-All SPL queries used in this investigation are stored in:
+Result:
+bstoll-l.froth.ly
+SOC Relevance:
+Inconsistent endpoint OS versions may indicate:
+•	Misconfiguration
+•	Unpatched systems
+•	Shadow IT
+•	Compromised hosts
+
 
 ```
 queries/botsv3_queries.spl
